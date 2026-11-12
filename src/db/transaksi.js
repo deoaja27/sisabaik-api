@@ -5,7 +5,11 @@ export async function transaksi(kerja, bacaSaja = false) {
   let dimulai = false;
   let rusak;
   try {
-    await client.query(bacaSaja ? "BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY" : "BEGIN");
+    await client.query(
+      bacaSaja
+        ? "BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY"
+        : "BEGIN",
+    );
     dimulai = true;
     await client.query("SET LOCAL lock_timeout = '2s'");
     const hasil = await kerja(client);

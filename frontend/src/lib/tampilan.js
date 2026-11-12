@@ -12,5 +12,9 @@ export const formatRupiah = (nilai) => rupiah.format(nilai);
 export const formatWaktu = (iso) => tanggal.format(new Date(iso));
 
 export function tersedia(penawaran, waktuSekarang) {
-  return penawaran.status === "aktif" && penawaran.stok > 0 && Date.parse(penawaran.berakhirPada) > waktuSekarang;
+  return (
+    penawaran.status === "aktif" &&
+    penawaran.stok > 0 &&
+    Date.parse(penawaran.berakhirPada) > waktuSekarang
+  );
 }

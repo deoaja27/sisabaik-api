@@ -5,7 +5,10 @@ import { authConfig } from "../config/auth.js";
 import { buatToken } from "../lib/token.js";
 import { HttpError } from "../lib/api.js";
 
-const hashDummy = await bcrypt.hash(randomBytes(32).toString("hex"), authConfig.cost);
+const hashDummy = await bcrypt.hash(
+  randomBytes(32).toString("hex"),
+  authConfig.cost,
+);
 
 export async function registrasi(data) {
   const hash = await bcrypt.hash(data.kataSandi, authConfig.cost);
@@ -14,7 +17,11 @@ export async function registrasi(data) {
     return akun.kePengguna(row);
   } catch (error) {
     if (error.code === "23505") {
-      throw new HttpError(409, "REGISTRATION_CONFLICT", "Pendaftaran tidak dapat diproses.");
+      throw new HttpError(
+        409,
+        "REGISTRATION_CONFLICT",
+        "Pendaftaran tidak dapat diproses.",
+      );
     }
     throw error;
   }
@@ -22,9 +29,16 @@ export async function registrasi(data) {
 
 export async function login(data) {
   const row = await akun.cariEmail(data.email);
-  const cocok = await bcrypt.compare(data.kataSandi, row?.kata_sandi_hash ?? hashDummy);
+  const cocok = await bcrypt.compare(
+    data.kataSandi,
+    row?.kata_sandi_hash ?? hashDummy,
+  );
   if (!row || !row.aktif || !row.kata_sandi_hash || !cocok) {
-    throw new HttpError(401, "LOGIN_FAILED", "Email atau kata sandi tidak valid.");
+    throw new HttpError(
+      401,
+      "LOGIN_FAILED",
+      "Email atau kata sandi tidak valid.",
+    );
   }
   return {
     accessToken: buatToken(row),
@@ -41,7 +55,11 @@ export async function registrasiPenyedia(data) {
     return akun.kePengguna(row);
   } catch (error) {
     if (error.code === "23505") {
-      throw new HttpError(409, "REGISTRATION_CONFLICT", "Pendaftaran tidak dapat diproses.");
+      throw new HttpError(
+        409,
+        "REGISTRATION_CONFLICT",
+        "Pendaftaran tidak dapat diproses.",
+      );
     }
     throw error;
   }

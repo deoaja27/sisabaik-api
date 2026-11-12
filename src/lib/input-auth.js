@@ -1,4 +1,10 @@
-import { objekValid, teksValid, salah, penawaranValid, pesananValid } from "./api.js";
+import {
+  objekValid,
+  teksValid,
+  salah,
+  penawaranValid,
+  pesananValid,
+} from "./api.js";
 
 function emailValid(value) {
   const email = teksValid(value, "email", 3, 254).toLowerCase();
@@ -13,8 +19,8 @@ export function kataSandiValid(value, baru = true) {
     salah("kataSandi wajib berupa teks tanpa karakter NUL.");
   }
   const jumlah = [...value].length;
-  if (jumlah < (baru ? 8 : 1) || Buffer.byteLength(value, "utf8") > 72) {
-    salah("Kata sandi baru minimal 8 karakter dan maksimum 72 byte UTF-8.");
+  if (jumlah < (baru ? 15 : 1) || Buffer.byteLength(value, "utf8") > 72) {
+    salah("Kata sandi baru minimal 15 karakter dan maksimum 72 byte UTF-8.");
   }
   return value;
 }
@@ -29,10 +35,22 @@ export function registrasiValid(body) {
 }
 
 export function registrasiPenyediaValid(body) {
-  objekValid(body, ["namaLengkap", "email", "kataSandi", "namaUsaha", "alamat", "nomorTelepon"]);
-  const nomor = teksValid(body.nomorTelepon, "nomorTelepon", 8, 30).replace(/[\s()-]/g, "");
+  objekValid(body, [
+    "namaLengkap",
+    "email",
+    "kataSandi",
+    "namaUsaha",
+    "alamat",
+    "nomorTelepon",
+  ]);
+  const nomor = teksValid(body.nomorTelepon, "nomorTelepon", 8, 30).replace(
+    /[\s()-]/g,
+    "",
+  );
   if (!/^\+?[0-9]{8,15}$/.test(nomor)) {
-    salah("Nomor telepon harus berisi 8–15 digit, dengan tanda + di awal bila diperlukan.");
+    salah(
+      "Nomor telepon harus berisi 8–15 digit, dengan tanda + di awal bila diperlukan.",
+    );
   }
   return {
     ...registrasiValid({
@@ -54,9 +72,59 @@ export function loginValid(body) {
   };
 }
 
-export function penawaranSesiValid(body, pengguna) {
-  objekValid(body, ["nama", "kategori", "hargaNormal", "hargaPenawaran", "stok", "satuan", "status", "berakhirPada"]);
-  return penawaranValid({ ...body, penyediaId: pengguna.penyediaId });
+export function penawaranSesiValid(body, pengguna, mengedit = false) {
+  objekValid(body, [
+    "nama",
+    "kategori",
+    "hargaNormal",
+    "hargaPenawaran",
+    "stok",
+    "satuan",
+    "status",
+    "berakhirPada",
+    "foto",
+    "versi",
+  ]);
+  const { foto, versi, ...isian } = body;
+  if (!mengedit && versi !== undefined)
+    salah("versi hanya digunakan untuk mengedit.");
+  if (
+    mengedit &&
+    (typeof versi !== "string" ||
+      !/^(0|[1-9][0-9]{0,18})$/.test(versi) ||
+      BigInt(versi) > 9223372036854775807n)
+  ) {
+    salah("versi penawaran wajib dikirim dari data terbaru.");
+  }
+  return {
+    ...penawaranValid({ ...isian, penyediaId: pengguna.penyediaId }),
+    foto,
+    versi,
+  };
+}
+
+export function aksiPesananValid(body) {
+  objekValid(body, ["aksi", "alasan", "pembayaranDiterima"]);
+  if (
+    !["konfirmasi", "siap", "selesai", "batal", "tolak"].includes(body.aksi)
+  ) {
+    salah("Aksi pesanan tidak dikenal.");
+  }
+  const batal = ["batal", "tolak"].includes(body.aksi);
+  const alasan = batal ? teksValid(body.alasan, "alasan", 3, 500) : null;
+  if (!batal && body.alasan !== undefined)
+    salah("alasan hanya untuk pembatalan atau penolakan.");
+  if (
+    body.pembayaranDiterima !== undefined &&
+    (body.aksi !== "selesai" || typeof body.pembayaranDiterima !== "boolean")
+  ) {
+    salah("pembayaranDiterima hanya berupa boolean pada penyelesaian.");
+  }
+  return {
+    aksi: body.aksi,
+    alasan,
+    pembayaranDiterima: body.pembayaranDiterima === true,
+  };
 }
 
 export function pesananSesiValid(body, pengguna) {

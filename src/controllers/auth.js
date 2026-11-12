@@ -1,5 +1,9 @@
 import * as service from "../services/auth.js";
-import { registrasiValid, registrasiPenyediaValid, loginValid } from "../lib/input-auth.js";
+import {
+  registrasiValid,
+  registrasiPenyediaValid,
+  loginValid,
+} from "../lib/input-auth.js";
 import { cabutToken } from "../repositories/pengguna.js";
 
 export async function registrasi(req, res) {
@@ -13,7 +17,9 @@ export async function login(req, res) {
 }
 
 export async function registrasiPenyedia(req, res) {
-  const data = await service.registrasiPenyedia(registrasiPenyediaValid(req.body));
+  const data = await service.registrasiPenyedia(
+    registrasiPenyediaValid(req.body),
+  );
   return res.status(201).json({ success: true, data });
 }
 
