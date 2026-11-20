@@ -3,7 +3,7 @@ import { computed, onMounted, watch } from "vue";
 import { sesi, perbaruiPengguna } from "../lib/sesi.js";
 import { api } from "../lib/api.js";
 import { useBaca } from "../composables/useBaca.js";
-import Ikon from "../components/ikon.vue";
+import Ikon from "../components/Ikon.vue";
 import StatusBaca from "../components/StatusBaca.vue";
 const { data, sibuk, error, muat } = useBaca((signal) => api("/api/auth/saya", { auth: true, signal }));
 const profil = computed(() => data.value?.data ?? sesi.pengguna);
