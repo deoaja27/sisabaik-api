@@ -5,12 +5,7 @@ try {
   const asal = new URL(process.argv[2] ?? "http://127.0.0.1:3000");
   assert.equal(asal.pathname, "/", "Gunakan alamat dasar tanpa /api.");
   assert.ok(!asal.search && !asal.hash && !asal.username && !asal.password);
-  assert.ok(
-    asal.protocol === "https:" ||
-      (asal.protocol === "http:" &&
-        ["localhost", "127.0.0.1"].includes(asal.hostname)),
-    "Alamat publik wajib HTTPS.",
-  );
+  assert.ok(asal.protocol === "https:" || (asal.protocol === "http:" && ["localhost", "127.0.0.1"].includes(asal.hostname)), "Alamat publik wajib HTTPS.");
   async function baca(path) {
     return fetch(new URL(path, asal), {
       headers: { Accept: "application/json, text/html" },
@@ -37,17 +32,24 @@ try {
   const html = await halaman.text();
   assert.match(html, /id="app"/);
   lulus("HTML Vue");
-  const aset = [...html.matchAll(/(?:src|href)="(\/assets\/[^\"]+)"/g)]
-    .map((x) => x[1]);
-  assert.ok(aset.some((x) => x.endsWith(".js")));
-  assert.ok(aset.some((x) => x.endsWith(".css")));
-  for (const path of aset) {
+  const aset = [...html.matchAll(/(?:src|href)="(\/assets\/[^"]+)"/g)].map((x) => x[1]);
+
+  const asetJS = aset.filter((x) => x.endsWith(".js"));
+  const asetCSS = aset.filter((x) => x.endsWith(".css"));
+
+  assert.ok(asetJS.length > 0, "File JavaScript Vue tidak ditemukan.");
+  assert.ok(asetCSS.length > 0, "File CSS Vue tidak ditemukan.");
+
+  for (const path of asetJS) {
     const r = await baca(path);
     assert.equal(r.status, 200, path);
-    assert.match(
-      r.headers.get("content-type") ?? "",
-      path.endsWith(".css") ? /text\/css/ : /javascript/,
-    );
+    assert.match(r.headers.get("content-type") ?? "", /javascript/, path);
+  }
+
+  for (const path of asetCSS) {
+    const r = await baca(path);
+    assert.equal(r.status, 200, path);
+    assert.match(r.headers.get("content-type") ?? "", /text\/css/, path);
   }
   lulus("aset JavaScript dan CSS");
   for (const [path, status] of [

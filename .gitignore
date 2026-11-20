@@ -1,11 +1,10 @@
 node_modules/ 
+frontend/node_modules/ 
+frontend/dist/ 
 .env 
 .env.* 
 !.env.example 
-.DS_Store 
-Thumbs.db 
+!.env.cloud.example 
+!.env.production-local.example 
 *.log 
-node_modules/ 
-.env 
-.DS_Store 
-npm-debug.log* 
+backups/ 
